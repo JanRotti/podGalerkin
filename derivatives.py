@@ -3,7 +3,7 @@ import numpy as np
 class derivatives:
     
     def __init__(self,mesh):
-        
+        # now included in mesh
         self.mesh = mesh
         
         # set lenghts scales 

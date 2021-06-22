@@ -8,6 +8,12 @@ class node:
         self.x = x
         self.y = y
         
+        # cartesian derivatives
+        self.dx = None
+        self.dy = None
+        self.ddx = None
+        self.ddy = None
+
         # cylinder coordinates
         self.rad = None
         self.theta = None
@@ -17,6 +23,9 @@ class node:
         self.l = None
         self.u = None
         self.b = None
+
+        # approximate volume participation
+        self.dv = 0
         
     def set_cyl(self,r,theta):
         self.rad = r

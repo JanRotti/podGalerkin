@@ -12,7 +12,7 @@ def mydist(xm,ym,x,y):
     return math.sqrt((x-xm)*(x-xm)+(y-ym)*(y-ym))
 
 # axes plotting for fixed mesh with central cylinder
-def plot_cylinder(x,y,data,cmap='cividis',levels=100,ax=None,clip=True):
+def plot_cylinder(x,y,data,cmap='cividis',levels=100,ax=None,clip=True,shifted=False):
     if ax==None:
         fig, ax = plt.subplots(figsize=(12,8))
     
@@ -23,8 +23,12 @@ def plot_cylinder(x,y,data,cmap='cividis',levels=100,ax=None,clip=True):
         data = np.clip(data,vmin,vmax)
     
     # plot central cylinder
-    cylinder = plt.Circle((0.5,0),0.5, color="grey")
-    cylinder_border = plt.Circle((0.5,0),0.5,color="black", fill=False)
+    if shifted:
+        center = (0,0)
+    else:
+        center = (0.5,0)
+    cylinder = plt.Circle(center,0.5, color="grey")
+    cylinder_border = plt.Circle(center,0.5,color="black", fill=False)
 
     ax.add_patch(cylinder)
     ax.add_patch(cylinder_border)
@@ -38,12 +42,20 @@ def plot_cylinder(x,y,data,cmap='cividis',levels=100,ax=None,clip=True):
     
     # set cylinder area values to 0
     r = 50
-    xm = 250
-    ym = 500
-    for i in range(200,300,1):
-        for j in range(450,550,1):
-            if mydist(xm,ym,i,j)<r:
-                grid[i,j] = 0
+    if shifted:
+        xm = 200
+        ym = 500
+        for i in range(150,250,1):
+            for j in range(450,550,1):
+                if mydist(xm,ym,i,j)<r:
+                    grid[i,j] = 0
+    else:
+        xm = 250
+        ym = 500        
+        for i in range(200,300,1):
+            for j in range(450,550,1):
+                if mydist(xm,ym,i,j)<r:
+                    grid[i,j] = 0
     
     # add contourf plot
     cntr = ax.contourf(grid_x,grid_y,grid,levels,cmap=cmap)

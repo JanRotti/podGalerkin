@@ -1,8 +1,6 @@
 import numpy as np
 
 class cell: 
-    
-    global mesh
 
     def __init__(self,node_list,index):
         
@@ -16,10 +14,12 @@ class cell:
         self.center = None
         self.int_coeffs = None
 
-        # temporary values
+        # value attributes
         self.value = None
         self.dx = None
         self.dy = None
+        self.ddx = None
+        self.ddy = None
 
     def compute_volume(self,mesh):
         
@@ -30,7 +30,7 @@ class cell:
         i4 = self.nodes[3]
 
         # computation of cell volume with arbitary quadrilateral formula
-        self.volume = ((mesh.points[i1][0]*mesh.points[i2][1]-mesh.points[i2][0]*mesh.points[i1][1])+(mesh.points[i2][0]*mesh.points[i3][1]-mesh.points[i2][1]*mesh.points[i3][0])+(mesh.points[i3][0]*mesh.points[i4][1]-mesh.points[i3][1]*mesh.points[i4][0])+(mesh.points[i4][0]*mesh.points[i1][1]-mesh.points[i4][1]*mesh.points[i1][0]))/2
+        self.volume = np.abs(((mesh.points[i1][0]*mesh.points[i2][1]-mesh.points[i2][0]*mesh.points[i1][1])+(mesh.points[i2][0]*mesh.points[i3][1]-mesh.points[i2][1]*mesh.points[i3][0])+(mesh.points[i3][0]*mesh.points[i4][1]-mesh.points[i3][1]*mesh.points[i4][0])+(mesh.points[i4][0]*mesh.points[i1][1]-mesh.points[i4][1]*mesh.points[i1][0]))/2)
         
     def compute_center(self,mesh):
 
