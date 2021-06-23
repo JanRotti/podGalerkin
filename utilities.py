@@ -262,5 +262,6 @@ def get_inc_flow_data(dir_name,delay=2000,subsampling=2,max_size=500):
 
     return {"X":X,"Y":Y,"u":u_arr,"v":v_arr,"p":p_arr}
 
-
+def print_padded(print_string):
+    print(f'{print_string:{"-"}^80}')
       
