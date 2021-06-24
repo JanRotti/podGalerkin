@@ -76,7 +76,7 @@ def Q(mesh,q1,q2,method="fd"):
     u_tmp = np.multiply(u1,u2x) + np.multiply(v1,u2y) + 2/(gamma - 1)*np.multiply(a1,a2x)
     v_tmp = np.multiply(u1,v2x) + np.multiply(v1,v2y) + 2/(gamma - 1)*np.multiply(a1,a2y)
     a_tmp = np.multiply(u1,a2x) + np.multiply(v1,a2y) + (gamma - 1)/2*np.multiply(a1,np.add(u2x,u2y))
-    return np.concatenate((u_tmp,v_tmp,a_tmp))
+    return -1 * np.concatenate((u_tmp,v_tmp,a_tmp))
 
 def L(mesh,q,method="fd"):
     # fd -> finite differences
@@ -122,7 +122,6 @@ def L(mesh,q,method="fd"):
     a_tmp = np.zeros(d)
     return np.concatenate((u_tmp,v_tmp,a_tmp))
 
-
 def inner_product(mesh,q1,q2):
     ## energy based inner product
     integral = 0    
@@ -140,6 +139,7 @@ def inner_product(mesh,q1,q2):
             # summation over nodes with corresponding node volume 
             integral += (q1[i]*q2[i]+q1[2*i]*q2[2*i]+mach_weight*q1[3*i]*q2[3*i]) * nod.dv
         return integral
+        
     # case cell data
     elif d==mesh.N and f==mesh.N:
         for cel in mesh.cells:

@@ -47,10 +47,10 @@ def finite_differences(mesh,data,fd=False,second=False):
                 ddr = 0
                 ddtheta = 0
             else:
-                 ddtheta = (data[l]-2*data[i]+data[r])/((theta_l-nod.theta)*(nod.theta-theta_r)) 
-                 ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)**2*(nod.rad-rad_b))
-                 nod.ddx = ddtheta*ddthetadx+ddr*ddrdx
-                 nod.ddy = ddtheta*ddthetady+ddr*ddrdy
+                ddtheta = (data[l]-2*data[i]+data[r])/((theta_l-nod.theta)*(nod.theta-theta_r)) 
+                ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)**2*(nod.rad-rad_b))
+            nod.ddx = ddtheta*ddthetadx+ddr*ddrdx
+            nod.ddy = ddtheta*ddthetady+ddr*ddrdy
 
 ### POLYNOMIAL APPROXIMATION METHOD
 def polynomial_derivatives(mesh,data,second=False):
