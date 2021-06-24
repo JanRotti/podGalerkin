@@ -153,7 +153,7 @@ class exp_mesh:
         # return cell based data array
         return cell_data
 
-    def compute_cell_values_from_node_data2(self,data):
+    def compute_cell_values_by_interpolation(self,data):
         ## by interpolation
         # initialize cell data array
         cell_data = np.empty(self.N)
@@ -173,11 +173,6 @@ class exp_mesh:
     def compute_cell_interpolations(self,data):
         for cell in self.cells:
             cell.cell_interpolation(data,self)
-
-    def compute_cell_derivatives(self):
-        for cell in self.cells:
-            cell.dx = cell.int_coeffs[0] * (cell.center[1])+ cell.int_coeffs[1]
-            cell.dy = cell.int_coeffs[0] * (cell.center[0])+ cell.int_coeffs[2]
 
     def compute_node_volume_participation(self):
         for cell in self.cells:
