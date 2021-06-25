@@ -1,7 +1,7 @@
 import numpy as np
 from derivatives import *
 
-def Q(mesh,q1,q2,method="fd"):
+def Q(mesh,q1,q2,method="fd",output="node"):
     gamma = 1.4
     ## methods for node based calculation
     # fd -> finite differences
@@ -20,6 +20,9 @@ def Q(mesh,q1,q2,method="fd"):
     a2 = q2[2*d:3*d]
 
     # initializing spatial derivatives
+    if (output=="cell" and method=="bm"):
+        d = int(mesh.N/3)
+    
     u2x = np.empty(d)
     v2x = np.empty(d)
     a2x = np.empty(d)
@@ -27,8 +30,17 @@ def Q(mesh,q1,q2,method="fd"):
     v2y = np.empty(d)
     a2y = np.empty(d)
 
+    # cell based data
+    if output=="cell" and len(q1==mesh.n):
+        u1 = mesh.compute_cell_values_from_node_data(u1)
+        v1 = mesh.compute_cell_values_from_node_data(v1)
+        a1 = mesh.compute_cell_values_from_node_data(a1)
+        u2_cell = mesh.compute_cell_values_from_node_data(u2)
+        v2_cell = mesh.compute_cell_values_from_node_data(v2)
+        a2_cell = mesh.compute_cell_values_from_node_data(a2)
+
     # computation of spatial derivatives
-    if len(q1==mesh.n):
+    if len(q1==mesh.n) and not method=="bm":
         if method=="fd":
             finite_differences(mesh,u2)
         elif method=="pd":
@@ -54,31 +66,55 @@ def Q(mesh,q1,q2,method="fd"):
         for nod in mesh.nodes:
             a2x[nod.index]=nod.dx
             a2y[nod.index]=nod.dy
+
     elif len(q1==mesh.N):
         if method!="bm":
             raise ValueError("Selected method not applicaple to cell based data! Please select bilinear mapping!")
         bilinear_derivatives(mesh,u2)
-        for nod in mesh.nodes:
-            u2x[nod.index]=nod.dx
-            u2y[nod.index]=nod.dy
+        for cel in mesh.nodes:
+            u2x[cel.index]=cel.dx
+            u2y[cel.index]=cel.dy
         bilinear_derivatives(mesh,v2)
         for nod in mesh.nodes:
-            v2x[nod.index]=nod.dx
-            v2y[nod.index]=nod.dy
+            v2x[cel.index]=cel.dx
+            v2y[cel.index]=cel.dy
         bilinear_derivatives(mesh,a2)
         for nod in mesh.nodes:
-            a2x[nod.index]=nod.dx
-            a2y[nod.index]=nod.dy
+            a2x[cel.index]=cel.dx
+            a2y[cel.index]=cel.dy
+    
+    elif len(q1==mesh.n) and (output=="cell" and method=="bm"):
+        bilinear_derivatives(mesh,u2_cell)
+        for cel in mesh.nodes:
+            u2x[cel.index]=cel.dx
+            u2y[cel.index]=cel.dy
+        bilinear_derivatives(mesh,v2_cell)
+        for nod in mesh.nodes:
+            v2x[cel.index]=cel.dx
+            v2y[cel.index]=cel.dy
+        bilinear_derivatives(mesh,a2_cell)
+        for nod in mesh.nodes:
+            a2x[cel.index]=cel.dx
+            a2y[cel.index]=cel.dy    
+    
     else:
         raise ValueError("Invalid dimension for input data!")
     
+    if(output=="cell" and method!="bm"):
+        u2x = mesh.compute_cell_values_from_node_data(u2x)
+        u2y = mesh.compute_cell_values_from_node_data(u2y)
+        v2x = mesh.compute_cell_values_from_node_data(v2x)
+        v2y = mesh.compute_cell_values_from_node_data(v2y)
+        a2x = mesh.compute_cell_values_from_node_data(a2x)
+        a2y = mesh.compute_cell_values_from_node_data(a2y)
+
     # computation of index based operator
     u_tmp = np.multiply(u1,u2x) + np.multiply(v1,u2y) + 2/(gamma - 1)*np.multiply(a1,a2x)
     v_tmp = np.multiply(u1,v2x) + np.multiply(v1,v2y) + 2/(gamma - 1)*np.multiply(a1,a2y)
     a_tmp = np.multiply(u1,a2x) + np.multiply(v1,a2y) + (gamma - 1)/2*np.multiply(a1,np.add(u2x,u2y))
     return -1 * np.concatenate((u_tmp,v_tmp,a_tmp))
 
-def L(mesh,q,method="fd"):
+def L(mesh,q,method="fd",output="node"):
     # fd -> finite differences
     # pd -> polynomial approximation   
     d = int(len(q)/3)
@@ -116,16 +152,22 @@ def L(mesh,q,method="fd"):
         vxx[nod.index]=nod.ddx
         vyy[nod.index]=nod.ddy
 
+    if output=="cell":
+        uxx = mesh.compute_cell_values_from_node_data(uxx)
+        uyy = mesh.compute_cell_values_from_node_data(uyy)
+        vxx = mesh.compute_cell_values_from_node_data(vxx)
+        vyy = mesh.compute_cell_values_from_node_data(vyy)
+        d = int(mesh.N/3)
+
     # computation of index based operator
     u_tmp = np.add(uxx,uyy)
     v_tmp = np.add(vxx,vyy)
     a_tmp = np.zeros(d)
     return np.concatenate((u_tmp,v_tmp,a_tmp))
 
-def inner_product(mesh,q1,q2):
+def inner_product(mesh,q1,q2,alpha = 1):
     ## energy based inner product
     integral = 0    
-    alpha = 1
     gamma = 1.4
     mach_weight = 2 * alpha / (gamma - 1)
     
