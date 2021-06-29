@@ -46,7 +46,7 @@ def read_csv_data(data_dir,file_name_structure="restart_flow_",delay=1000,subsam
         if (num_files)//subsampling > max_size:
             array_size = max_size
         else:
-            array_size = files//subsampling
+            array_size = num_files//subsampling
     else:
         array_size = num_files
 
