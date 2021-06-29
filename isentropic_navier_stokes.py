@@ -21,7 +21,7 @@ def Q(mesh,q1,q2,method="fd",output="node"):
 
     # initializing spatial derivatives
     if (output=="cell" and method=="bm"):
-        d = int(mesh.N/3)
+        d = mesh.N
     
     u2x = np.empty(d)
     v2x = np.empty(d)
@@ -117,22 +117,19 @@ def Q(mesh,q1,q2,method="fd",output="node"):
 def L(mesh,q,method="fd",output="node"):
     # fd -> finite differences
     # pd -> polynomial approximation   
-    d = int(len(q)/3)
+    d = mesh.n
     
     # decomposition into variable vectors
     u = q[:d]
     v = q[d:2*d]
-    a = q[2*d:3*d]    
 
     if len(q)!=mesh.n:
         ValueError("Invalid data dimension!")
     
     # initializing spatial derivatives
-    uxx = np.empty(d)
-    uyy = np.empty(d)
-    vxx = np.empty(d)
-    vyy = np.empty(d)
-    
+    ulap = np.empty(d)
+    vlap = np.empty(d)
+
     # computing second derivatives
     if method=="fd":
         finite_differences(mesh,u,second=True)
@@ -141,31 +138,27 @@ def L(mesh,q,method="fd",output="node"):
     else:
         raise ValueError("Invalid for node based derivatives!")
     for nod in mesh.nodes:
-        uxx[nod.index]=nod.ddx
-        uyy[nod.index]=nod.ddy
+        ulap[nod.index]=nod.laplacian
     
     if method=="fd":
         finite_differences(mesh,v,second=True)
     elif method=="pd":
         polynomial_derivatives(mesh,v,second=True)
     for nod in mesh.nodes:
-        vxx[nod.index]=nod.ddx
-        vyy[nod.index]=nod.ddy
+        vlap[nod.index]=nod.laplacian
 
     if output=="cell":
-        uxx = mesh.compute_cell_values_from_node_data(uxx)
-        uyy = mesh.compute_cell_values_from_node_data(uyy)
-        vxx = mesh.compute_cell_values_from_node_data(vxx)
-        vyy = mesh.compute_cell_values_from_node_data(vyy)
-        d = int(mesh.N/3)
+        ulap = mesh.compute_cell_values_from_node_data(ulap)
+        vlap = mesh.compute_cell_values_from_node_data(vlap)
+        d = mesh.N
 
     # computation of index based operator
-    u_tmp = np.add(uxx,uyy)
-    v_tmp = np.add(vxx,vyy)
+    u_tmp = ulap
+    v_tmp = vlap
     a_tmp = np.zeros(d)
     return np.concatenate((u_tmp,v_tmp,a_tmp))
 
-def inner_product(mesh,q1,q2,alpha = 1):
+def inner_product(mesh,q1,q2,alpha = 1, gamma = 1.4):
     ## energy based inner product
     integral = 0    
     gamma = 1.4
@@ -179,7 +172,7 @@ def inner_product(mesh,q1,q2,alpha = 1):
         for nod in mesh.nodes:
             i = nod.index
             # summation over nodes with corresponding node volume 
-            integral += (q1[i]*q2[i]+q1[2*i]*q2[2*i]+mach_weight*q1[3*i]*q2[3*i]) * nod.dv
+            integral += (q1[i]*q2[i]+q1[d+i]*q2[d+i]+mach_weight*q1[2*d+i]*q2[2*d+i]) * nod.dv
         return integral
         
     # case cell data
@@ -187,9 +180,9 @@ def inner_product(mesh,q1,q2,alpha = 1):
         for cel in mesh.cells:
             i = cel.index
             # summation over ncells with corresponding cell volumes
-            integral += (q1[i]*q2[i]+q1[2*i]*q2[2*i]+mach_weight*q1[3*i]*q2[3*i]) * cel.volume
+            integral += (q1[i]*q2[i]+q1[d+i]*q2[d+i]+mach_weight*q1[2*d+i]*q2[2*d+i]) * cel.volume
         return integral
     # case invalid dimensions
     else:
         raise ValueError("Invalid Dimension in data vectors!")
-    return 0
+

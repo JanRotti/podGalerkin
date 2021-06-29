@@ -17,16 +17,19 @@ def finite_differences(mesh,data,fd=False,second=False):
         dthetadx = -nod.y/(nod.rad**2)
         drdy = nod.y/nod.rad
         dthetady = nod.x/(nod.rad**2)     
+        """
         if second:
             ddthetadx = (2*nod.y*nod.x)/(np.power(nod.rad,4))
             ddrdx = (nod.y*nod.y)/(np.power(nod.rad,3))
             ddthetady = -(2*nod.y*nod.x)/(np.power(nod.rad,4))
             ddrdy = (nod.x*nod.x)/(np.power(nod.rad,3))
+        """
         # compute cylindrical derivatives
         rad_u = mesh.nodes[u].rad if (u) else None
         rad_b = mesh.nodes[b].rad if (b) else None
         theta_l = mesh.nodes[l].theta if (mesh.nodes[l].theta!=0) else 2*np.pi
         theta_r = mesh.nodes[r].theta if (mesh.nodes[i].theta!=0) else mesh.nodes[r].theta-2*np.pi
+        
         if not (u) or not (b):
             dr = 0
             dtheta = 0
@@ -48,9 +51,9 @@ def finite_differences(mesh,data,fd=False,second=False):
                 ddtheta = 0
             else:
                 ddtheta = (data[l]-2*data[i]+data[r])/((theta_l-nod.theta)*(nod.theta-theta_r)) 
-                ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)**2*(nod.rad-rad_b))
-            nod.ddx = ddtheta*ddthetadx+ddr*ddrdx
-            nod.ddy = ddtheta*ddthetady+ddr*ddrdy
+                ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)**2 * (nod.rad-rad_b))
+            
+            nod.laplacian = ddr + (1/nod.rad)*dr+(1/(nod.rad**2))*ddtheta
 
 ### POLYNOMIAL APPROXIMATION METHOD
 def polynomial_derivatives(mesh,data,second=False):
@@ -70,11 +73,14 @@ def polynomial_derivatives(mesh,data,second=False):
         drdy = nod.y/nod.rad
         dthetady = nod.x/(nod.rad**2)    
 
+        """
         if second:
             ddthetadx = (2*nod.y*nod.x)/(np.power(nod.rad,4))
             ddrdx = (nod.y*nod.y)/(np.power(nod.rad,3))
             ddthetady = -(2*nod.y*nod.x)/(np.power(nod.rad,4))
             ddrdy = (nod.x*nod.x)/(np.power(nod.rad,3))
+        """
+        
         if not (u) or not (b):
             nod.dx = 0
             nod.ddx = 0
@@ -98,8 +104,7 @@ def polynomial_derivatives(mesh,data,second=False):
             nod.dx = dpol_phi*dthetadx + dpol_rad*drdx
             nod.dy = dpol_phi*dthetady + dpol_rad*drdy
             if second:
-                nod.ddx = ddpol_phi*ddthetadx+ddpol_rad*ddrdx+2*dpol_rad*drdx*dpol_phi*dthetadx
-                nod.ddy = ddpol_phi*ddthetady+ddpol_rad*ddrdy+2*dpol_phi*dthetady*dpol_rad*drdy
+                nod.laplacian = ddpol_rad + (1/nod.rad) * dpol_rad + (1/(nod.rad**2)) * ddpol_phi
 
 ### BILINEAR FACE INTERPOLATION
 # for cell centered derivatives

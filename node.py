@@ -13,6 +13,7 @@ class node:
         self.dy = None
         self.ddx = None
         self.ddy = None
+        self.laplacian = None
 
         # cylinder coordinates
         self.rad = None

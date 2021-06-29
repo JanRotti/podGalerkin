@@ -130,7 +130,8 @@ def get_flow_data(dir_name,delay=2000,subsampling=2,max_size=500):
 
     return {"u":u_arr,"v":v_arr,"a":a_arr,"e":e_arr,"p":p_arr,"rho":rho_arr,"vort":vort_arr}
 
-def get_x_y(dir_name):
+# retreives mesh x,y values from first directory file
+def get_x_y(dir_name): 
     [pid,x,y,rho,mx,my,p,e,vort] = read_data_from_csv(dir_name+os.listdir(dir_name)[0])
     return (x,y)
 
@@ -262,6 +263,7 @@ def get_inc_flow_data(dir_name,delay=2000,subsampling=2,max_size=500):
 
     return {"X":X,"Y":Y,"u":u_arr,"v":v_arr,"p":p_arr}
 
+# ouput for a centered padded string with "--"
 def print_padded(print_string):
     print(f'{print_string:{"-"}^80}')
       
