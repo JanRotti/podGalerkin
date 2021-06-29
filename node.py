@@ -8,6 +8,9 @@ class node:
         self.x = x
         self.y = y
         
+        # node value
+        self.value = None
+
         # cartesian derivatives
         self.dx = None
         self.dy = None
