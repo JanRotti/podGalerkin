@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
 # reading simulation data from csv files
-def read_csv_data(data_dir,file_name_structure="restart_flow_",delay=1000,subsampling=1,max_size=500,data_list=[]):
+def read_csv_data(data_dir,delay=1000,subsampling=1,max_size=500,data_list=[]):
     ## Variables
     # file_name_structure   -> naming scheme of csv files
     # delay                 -> first file to read in

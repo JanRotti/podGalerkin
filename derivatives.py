@@ -87,11 +87,14 @@ def polynomial_derivatives(mesh,data,second=False):
             nod.dy = 0
             nod.ddy = 0
         else:
+            theta_l = mesh.nodes[l].theta if (mesh.nodes[l].theta!=0) else 2*np.pi
+            theta_r = mesh.nodes[r].theta if (mesh.nodes[i].theta!=0) else mesh.nodes[r].theta-2*np.pi
+        
             # polynomial fitting
-            a_phi = (data[l]-data[r])/(nod.theta-mesh.nodes[r].theta)-(data[i]-data[r])/(mesh.nodes[l].theta-mesh.nodes[r].theta)
-            b_phi = (data[i]-data[r])/(nod.theta-mesh.nodes[r].theta)-(data[l]-data[r])+(data[i]-data[r])*(nod.theta-mesh.nodes[r].theta)/(mesh.nodes[l].theta-mesh.nodes[r].theta)
+            a_phi = (data[l]-data[r])/(nod.theta-theta_r)-(data[i]-data[r])/(theta_l-theta_r)
+            b_phi = (data[i]-data[r])/(nod.theta-theta_r)-(data[l]-data[r])+(data[i]-data[r])*(nod.theta-theta_r)/(theta_l-theta_r)
             c_phi = data[r]
-            dpol_phi = 2*a_phi*(nod.theta-mesh.nodes[r].theta) + b_phi
+            dpol_phi = 2*a_phi*(nod.theta-theta_r) + b_phi
             ddpol_phi = a_phi
     
             a_rad = (data[u]-data[b])/(nod.rad-mesh.nodes[b].rad)-(data[i]-data[b])/(mesh.nodes[u].rad-mesh.nodes[b].rad)
@@ -112,8 +115,8 @@ def bilinear_derivatives(mesh,data,second=False):
     for cel in mesh.cells:
 
         # retrieve cartesian coordinates of cell nodes
-        x = mesh.nodes[cel.nodes][:,0]
-        y = mesh.nodes[cel.nodes][:,1]
+        x = mesh.points[cel.nodes][:,0]
+        y = mesh.points[cel.nodes][:,1]
 
         # construct condition matrix
         A = np.array([[x[0]*y[0],x[0],y[0],1],[x[1]*y[1],x[1],y[1],1],

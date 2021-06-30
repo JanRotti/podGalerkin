@@ -117,7 +117,7 @@ def Q(mesh,q1,q2,method="fd",output="node"):
 def L(mesh,q,method="fd",output="node"):
     # fd -> finite differences
     # pd -> polynomial approximation   
-    d = mesh.n
+    d = 32
     
     # decomposition into variable vectors
     u = q[:d]
