@@ -17,7 +17,7 @@ def read_csv_data(data_dir,file_name_structure="restart_flow_",delay=1000,subsam
     
     # reading simulation data from csv files
     file_list = os.listdir(data_dir)
-    num_files = len(file_list) - delay # difference of delay and filelist length
+    num_files = len(file_list) # difference of delay and filelist length
     if num_files<=0:
         raise ValueError("Invalid delay or empty directory!")
 
@@ -42,13 +42,10 @@ def read_csv_data(data_dir,file_name_structure="restart_flow_",delay=1000,subsam
         print("File not accessible") 
 
     # compute array size for initialization
-    if num_files > max_size:
-        if (num_files)//subsampling > max_size:
-            array_size = max_size
-        else:
-            array_size = num_files//subsampling
+    if (num_files-delay)//subsampling > max_size:
+        array_size = max_size
     else:
-        array_size = num_files
+        array_size = (num_files-delay)//subsampling
 
     # initialize data dictionary
     data = {}
@@ -60,8 +57,7 @@ def read_csv_data(data_dir,file_name_structure="restart_flow_",delay=1000,subsam
 
     # reading file data from csv files
     for i in tqdm(range(array_size)):
-        num = i * subsampling + delay
-        fname = data_dir + file_name_structure + "{:05d}".format(num) + ".csv"
+        fname = data_dir + file_list[i*subsampling+delay]
         # reading routine
         with open(fname) as f:
             data_iter = csv.reader(f,delimiter=",")
@@ -154,7 +150,26 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
 def print_padded(print_string):
     print(f'{print_string:{"-"}^80}')
 
+# plotting pod mode activation in time
+def plot_activations(coeffs,num):
+    dt = 1 
+    t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
 
+    rows = int((num/2))
+    print(rows)
+    fig,ax = plt.subplots(rows,2,figsize=(7.5*rows,10))
+    fig.tight_layout(pad=3.0)
+    if rows==1:
+        ax[0].plot(t,coeffs[0,:])
+        ax[0].title.set_text("Activation for Eigenflow 0")
+        ax[1].plot(t,coeffs[1,:])
+        ax[1].title.set_text("Activation for Eigenflow 1")
+    else:
+        for i in range(rows):
+            ax[i][0].plot(t,coeffs[2*i,:])
+            ax[i][0].title.set_text("Activation for Eigenflow " + str(2*i))
+            ax[i][1].plot(t,coeffs[2*i+1,:])
+            ax[i][1].title.set_text("Activation for Eigenflow " + str(2*i+1))
 
 
 
