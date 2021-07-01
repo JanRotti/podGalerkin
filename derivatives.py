@@ -17,13 +17,7 @@ def finite_differences(mesh,data,fd=False,second=False):
         dthetadx = -nod.y/(nod.rad**2)
         drdy = nod.y/nod.rad
         dthetady = nod.x/(nod.rad**2)     
-        """
-        if second:
-            ddthetadx = (2*nod.y*nod.x)/(np.power(nod.rad,4))
-            ddrdx = (nod.y*nod.y)/(np.power(nod.rad,3))
-            ddthetady = -(2*nod.y*nod.x)/(np.power(nod.rad,4))
-            ddrdy = (nod.x*nod.x)/(np.power(nod.rad,3))
-        """
+
         # compute cylindrical derivatives
         rad_u = mesh.nodes[u].rad if (u) else None
         rad_b = mesh.nodes[b].rad if (b) else None
@@ -72,20 +66,13 @@ def polynomial_derivatives(mesh,data,second=False):
         dthetadx = -nod.y/(nod.rad**2)
         drdy = nod.y/nod.rad
         dthetady = nod.x/(nod.rad**2)    
-
-        """
-        if second:
-            ddthetadx = (2*nod.y*nod.x)/(np.power(nod.rad,4))
-            ddrdx = (nod.y*nod.y)/(np.power(nod.rad,3))
-            ddthetady = -(2*nod.y*nod.x)/(np.power(nod.rad,4))
-            ddrdy = (nod.x*nod.x)/(np.power(nod.rad,3))
-        """
         
         if not (u) or not (b):
             nod.dx = 0
             nod.ddx = 0
             nod.dy = 0
             nod.ddy = 0
+            nod.laplacian = 0
         else:
             theta_l = mesh.nodes[l].theta if (mesh.nodes[l].theta!=0) else 2*np.pi
             theta_r = mesh.nodes[r].theta if (mesh.nodes[i].theta!=0) else mesh.nodes[r].theta-2*np.pi

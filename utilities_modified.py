@@ -156,7 +156,6 @@ def plot_activations(coeffs,num):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
 
     rows = int((num/2))
-    print(rows)
     fig,ax = plt.subplots(rows,2,figsize=(7.5*rows,10))
     fig.tight_layout(pad=3.0)
     if rows==1:
