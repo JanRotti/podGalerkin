@@ -143,6 +143,7 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
                 grid[i,j]=0
 
     cntr = ax.contourf(grid_x,grid_y,grid,levels,cmap=cmap)
+    
     # add colorbar
     plt.colorbar(cntr,ax=ax);
 

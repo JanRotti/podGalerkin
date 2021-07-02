@@ -40,7 +40,7 @@ def Q(mesh,q1,q2,method="fd",output="node"):
         a2_cell = mesh.compute_cell_values_from_node_data(a2)
 
     # computation of spatial derivatives
-    if len(q1==mesh.n) and not method=="bm":
+    if (int(len(q1)/3)==mesh.n) and not method=="bm":
         if method=="fd":
             finite_differences(mesh,u2)
         elif method=="pd":
@@ -83,7 +83,7 @@ def Q(mesh,q1,q2,method="fd",output="node"):
             a2x[cel.index]=cel.dx
             a2y[cel.index]=cel.dy
     
-    elif len(q1==mesh.n) and (output=="cell" and method=="bm"):
+    elif len(int(len(q1)/3)==mesh.n) and (output=="cell" and method=="bm"):
         bilinear_derivatives(mesh,u2_cell)
         for cel in mesh.nodes:
             u2x[cel.index]=cel.dx
@@ -109,9 +109,9 @@ def Q(mesh,q1,q2,method="fd",output="node"):
         a2y = mesh.compute_cell_values_from_node_data(a2y)
 
     # computation of index based operator
-    u_tmp = np.multiply(u1,u2x) + np.multiply(v1,u2y) + 2/(gamma - 1)*np.multiply(a1,a2x)
-    v_tmp = np.multiply(u1,v2x) + np.multiply(v1,v2y) + 2/(gamma - 1)*np.multiply(a1,a2y)
-    a_tmp = np.multiply(u1,a2x) + np.multiply(v1,a2y) + (gamma - 1)/2*np.multiply(a1,np.add(u2x,u2y))
+    u_tmp = np.multiply(u1,u2x) + np.multiply(v1,u2y) + (2/(gamma - 1))*np.multiply(a1,a2x)
+    v_tmp = np.multiply(u1,v2x) + np.multiply(v1,v2y) + (2/(gamma - 1))*np.multiply(a1,a2y)
+    a_tmp = np.multiply(u1,a2x) + np.multiply(v1,a2y) + ((gamma - 1)/2)*np.multiply(a1,np.add(u2x,u2y))
     return -1 * np.concatenate((u_tmp,v_tmp,a_tmp))
 
 def L(mesh,q,method="fd",output="node"):

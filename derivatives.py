@@ -44,8 +44,8 @@ def finite_differences(mesh,data,fd=False,second=False):
                 ddr = 0
                 ddtheta = 0
             else:
-                ddtheta = (data[l]-2*data[i]+data[r])/((theta_l-nod.theta)*(nod.theta-theta_r)) 
-                ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)**2 * (nod.rad-rad_b))
+                ddtheta = (data[l]-2*data[i]+data[r])/((theta_l-nod.theta)*(nod.theta - theta_r)) 
+                ddr = (data[u]*(nod.rad-rad_b)+data[b]*(rad_u-nod.rad)-data[i]*(rad_u-rad_b))/((rad_u-nod.rad)*(nod.rad-rad_b)*(rad_u - rad_b)/2)
             
             nod.laplacian = ddr + (1/nod.rad)*dr+(1/(nod.rad**2))*ddtheta
 
@@ -97,7 +97,6 @@ def polynomial_derivatives(mesh,data,second=False):
                 nod.laplacian = ddpol_rad + (1/nod.rad) * dpol_rad + (1/(nod.rad**2)) * ddpol_phi
 
 ### BILINEAR FACE INTERPOLATION
-# for cell centered derivatives
 def bilinear_derivatives(mesh,data,second=False):
     for cel in mesh.cells:
 
