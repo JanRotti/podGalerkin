@@ -161,7 +161,6 @@ def L(mesh,q,method="fd",output="node"):
 def inner_product(mesh,q1,q2,alpha = 1, gamma = 1.4):
     ## energy based inner product
     integral = 0    
-    gamma = 1.4
     mach_weight = 2 * alpha / (gamma - 1)
     
     d = int(len(q1)/3)
@@ -186,3 +185,5 @@ def inner_product(mesh,q1,q2,alpha = 1, gamma = 1.4):
     else:
         raise ValueError("Invalid Dimension in data vectors!")
 
+def skalar_product(d1,d2,w):
+    return np.sum(d1*d2*w)

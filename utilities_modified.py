@@ -93,13 +93,14 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
     if zoom:
         xlim_l = -far*0.2
         xlim_r = far*0.8
-        ylim_r = -far/5
-        ylim_l = far/5
+        ylim_r = far/5
+        ylim_l = -far/5
     else:
         xlim_l = -far
         xlim_r = far
-        ylim_r = -far
-        ylim_l = far
+        ylim_r = far
+        ylim_l = -far
+        
     ax.set_xlim([xlim_l,xlim_r])
     ax.set_ylim([ylim_l,ylim_r])
 
@@ -135,7 +136,7 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
     for i in range(xm-int(r/dx),xm+int(r/dx),1):
         for j in range(ym-int(r/dy),ym+int(r/dy),1):
             if dist(xm,ym,i,j)<(r/dx):
-                grid[i,j] = 0
+                grid[j,i] = 0
 
     for i in range(resolution):
         for j in range(resolution):
@@ -149,7 +150,7 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
 
 # pretty printing a string - ouput for a centered padded string with "--"
 def print_padded(print_string):
-    print(f'{print_string:{"-"}^80}')
+    print(f'{print_string:{"-"}<80}')
 
 # plotting pod mode activation in time
 def plot_activations(coeffs,num):
