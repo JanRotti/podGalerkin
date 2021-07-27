@@ -184,4 +184,3 @@ def plot_activations(coeffs,num):
 
 
 
-
