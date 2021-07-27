@@ -9,7 +9,7 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     C = np.empty((T,T))
     for i in range(T):
         for j in range(i,T):
-            C[i,j] = (1/T) * np.sum(snapshots[:,i] * snapshots[:,j] * skalar_weights)
+            C[i,j] = np.sum(snapshots[:,i] * snapshots[:,j] * skalar_weights)
             C[j,i] = C[i,j]  # C is symmetric by construction
 
     S, V =  np.linalg.eigh(C,UPLO='L')
@@ -19,14 +19,13 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     # construct spatial POD Modes
     pod_modes = np.zeros((snapshots.shape[0],max_POD))
     for i in range(max_POD):
-        pod_modes[:,i] = 1 / np.sqrt(S[i]*T) *  np.matmul(snapshots,V[:,i])
+        pod_modes[:,i] = 1 / np.sqrt(S[i]) *  np.matmul(snapshots,V[:,i])
 
     # computing eigenvalues
     S = np.zeros(max_POD)
     for i in range(max_POD):
         for j in range(T):
             S[i] += np.sum(snapshots[:,j] * pod_modes[:,i] * skalar_weights)**2
-        S[i] /= T
 
     return [pod_modes, S]
 
