@@ -72,7 +72,7 @@ def read_csv_data(data_dir,delay=1000,subsampling=1,max_size=500,data_list=[]):
     return data
 
 # plotting cylinder data
-def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,resolution=1000):
+def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,resolution=1000,cbar=True):
     # construct plotting axis if necessary
     if ax==None:
         if zoom:
@@ -146,7 +146,8 @@ def plot_cylinder_data(x,y,data,levels=100,cmap='cividis',ax=None,zoom=False,res
     cntr = ax.contourf(grid_x,grid_y,grid,levels,cmap=cmap)
     
     # add colorbar
-    plt.colorbar(cntr,ax=ax);
+    if cbar:
+        plt.colorbar(cntr,ax=ax);
 
 # pretty printing a string - ouput for a centered padded string with "--"
 def print_padded(print_string):
