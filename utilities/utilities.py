@@ -154,8 +154,7 @@ def print_padded(print_string):
     print(f'{print_string:{"-"}<80}')
 
 # plotting pod mode activation in time
-def plot_activations(coeffs,num):
-    dt = 1 
+def plot_activations(coeffs,num,dt = 1):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
 
     rows = int((num/2))
