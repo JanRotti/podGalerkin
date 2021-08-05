@@ -148,7 +148,6 @@ class rot_sym_mesh:
         if compute_laplacian:
             laplacian = np.empty(self.n)
         
-        
         for nod in self.nodes:
             
             # 5 point stencil indizes
@@ -170,9 +169,12 @@ class rot_sym_mesh:
             phi_l = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
             phi_r = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
             
-            if not (u) or not (b): # boundary conditions
+            if not (b): # boundary conditions
                 dr = 0
                 dphi = 0
+            elif not (u):
+                dr = 0
+                dphi = (data[l] - data[r]) / (phi_l - phi_r)
             else:
                 if fd: # using forward differences
                     dr   = (data[u] - data[i]) / (rad_u - nod.rad)
@@ -186,9 +188,12 @@ class rot_sym_mesh:
             dy[i] = dphi * dphidy + dr * drdy
 
             if compute_laplacian:
-                if not (u) or not (b):
+                if not (b): # boundary conditions
                     ddr = 0
                     ddphi = 0
+                elif not (u):
+                    ddr = 0
+                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
                 else:
                     ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
                     ddr   = (data[u] * (nod.rad - rad_b) + data[b] * (rad_u - nod.rad) - data[i] * (rad_u - rad_b)) / ((rad_u - nod.rad) * (nod.rad - rad_b) * (rad_u - rad_b) / 2)

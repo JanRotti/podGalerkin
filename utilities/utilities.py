@@ -154,24 +154,16 @@ def print_padded(print_string):
     print(f'{print_string:{"-"}<80}')
 
 # plotting pod mode activation in time
-def plot_activations(coeffs,num,dt = 1):
+def plot_activations(coeffs,num,dt):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
 
-    rows = int((num/2))
-    fig,ax = plt.subplots(rows,2,figsize=(7.5*rows,10))
+    rows = int(num//2)
+    fig, ax = plt.subplots(rows,1,figsize=(10,2*8))
     fig.tight_layout(pad=3.0)
-    if rows==1:
-        ax[0].plot(t,coeffs[0,:])
-        ax[0].title.set_text("Activation for Eigenflow 0")
-        ax[1].plot(t,coeffs[1,:])
-        ax[1].title.set_text("Activation for Eigenflow 1")
-    else:
-        for i in range(rows):
-            ax[i][0].plot(t,coeffs[2*i,:])
-            ax[i][0].title.set_text("Activation for Eigenflow " + str(2*i))
-            ax[i][1].plot(t,coeffs[2*i+1,:])
-            ax[i][1].title.set_text("Activation for Eigenflow " + str(2*i+1))
-
+    for i in range(rows):
+        ax[i].plot(t,coeffs[2*i,:])
+        ax[i].plot(t,coeffs[2*i + 1,:])
+        ax[i].title.set_text("Eigenflow " + str(i) + " and " + str(i+1))
 
 def plot_group_activations(coeffs,num,dt):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
