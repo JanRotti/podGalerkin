@@ -163,7 +163,7 @@ def plot_activations(coeffs,num,dt):
     for i in range(rows):
         ax[i].plot(t,coeffs[2*i,:])
         ax[i].plot(t,coeffs[2*i + 1,:])
-        ax[i].title.set_text("Eigenflow " + str(i) + " and " + str(i+1))
+        ax[i].title.set_text("Eigenflow " + str(2*i) + " and " + str(2*i+1))
 
 def plot_group_activations(coeffs,num,dt):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
