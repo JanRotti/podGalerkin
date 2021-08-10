@@ -4,6 +4,7 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     
     # POD by method of snapshots
     T = snapshots.shape[1]
+    space = snapshots.shape[0]
 
     # construct correlation matrix
     C = np.empty((T,T))
@@ -17,7 +18,7 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     V = np.flip(V,1)
 
     # construct spatial POD Modes
-    pod_modes = np.zeros((snapshots.shape[0],max_POD))
+    pod_modes = np.zeros((space,max_POD))
     for i in range(max_POD):
         pod_modes[:,i] = 1 / np.sqrt(S[i]) *  np.matmul(snapshots,V[:,i])
 
