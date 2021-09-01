@@ -1,6 +1,6 @@
 import numpy as np
 
-def get_POD(snapshots,skalar_weights,max_POD=10):
+def get_POD(snapshots,skalarProduct,max_POD=10):
     
     # POD by method of snapshots
     T = snapshots.shape[1]
@@ -10,7 +10,7 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     C = np.empty((T,T))
     for i in range(T):
         for j in range(i,T):
-            C[i,j] = np.sum(snapshots[:,i] * snapshots[:,j] * skalar_weights)
+            C[i,j] = skalarProduct(snapshots[:,i], snapshots[:,j])
             C[j,i] = C[i,j]  # C is symmetric by construction
 
     S, V =  np.linalg.eigh(C,UPLO='L')
@@ -26,15 +26,15 @@ def get_POD(snapshots,skalar_weights,max_POD=10):
     S = np.zeros(max_POD)
     for i in range(max_POD):
         for j in range(T):
-            S[i] += np.sum(snapshots[:,j] * pod_modes[:,i] * skalar_weights)**2
+            S[i] += skalarProduct(snapshots[:,j], pod_modes[:,i])**2
 
     return [pod_modes, S]
 
-def get_activations(snapshots,pod_modes,skalar_weights,rec_num=0):
+def get_activations(snapshots,pod_modes,skalarProduct,rec_num=0):
     if rec_num==0:
         rec_num = pod_modes.shape[1]
     activations = np.zeros((pod_modes.shape[1],snapshots.shape[1]))
     for t in range(snapshots.shape[1]):
         for i in range(rec_num):
-            activations[i,t] = np.sum(snapshots[:,t] * pod_modes[:,i] * skalar_weights)
+            activations[i,t] = skalarProduct(snapshots[:,t], pod_modes[:,i])
     return activations
