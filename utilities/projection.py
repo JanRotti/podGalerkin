@@ -1,10 +1,12 @@
 import numpy as np
 from tqdm import tqdm
+from problem.isentropic_navier_stokes import * 
 
 ### GALERKIN PROJECTION
 def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
     # isentropic navier stokes based coefficients
     dim = podModes.shape[1]
+    vecSize = len(qAvg)
 
     # initialization of coeffiecient structures
     b1 = np.zeros(dim)
@@ -18,10 +20,10 @@ def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
     avgConv = convection(mesh,qAvg,qAvg)
 
     # temporary convection/diffusion computation
-    convTmp1 = np.zeros((dim,3*mesh.n))
-    convTmp2 = np.zeros((dim,3*mesh.n))
-    convTmp3 = np.zeros((dim,dim,3*mesh.n))
-    diffTmp  = np.zeros((dim,3*mesh.n))
+    convTmp1 = np.zeros((dim,vecSize))
+    convTmp2 = np.zeros((dim,vecSize))
+    convTmp3 = np.zeros((dim,dim,vecSize))
+    diffTmp  = np.zeros((dim,vecSize))
 
     # computation loop for convection/diffusion
     for i in tqdm(range(dim)):
@@ -49,6 +51,7 @@ def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
 
 def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
     dim = podModes.shape[1]
+    vecSize = len(qAvg)
 
     # computing control based operators
     Lcon = diffusion(mesh,qCon)
@@ -64,8 +67,8 @@ def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
     h = np.empty(dim)
 
     # compute temporary L and Q operators for projection
-    tmp1 = np.empty((dim,3*n))
-    tmp2 = np.empty((dim,3*n))
+    tmp1 = np.empty((dim,vecSize))
+    tmp2 = np.empty((dim,vecSize))
     for i in tqdm(range(dim)):
         tmp1[i] = convection(mesh,qCon,podModes[:,i])
         tmp2[i] = convection(mesh,podModes[:,i],qCon)
@@ -81,3 +84,4 @@ def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
 
     print("Additional projection based Galerkin coefficients for control in order: d1, d2, f, g, h")
     return [d1, d2, f, g, h]
+

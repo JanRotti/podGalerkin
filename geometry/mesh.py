@@ -143,10 +143,10 @@ class rot_sym_mesh:
     def finite_differences(self,data,fd=False,compute_laplacian=False):
         
         # initialize data vectors
-        dx = np.empty(self.n)
-        dy = np.empty(self.n)
+        dx = np.zeros(self.n)
+        dy = np.zeros(self.n)
         if compute_laplacian:
-            laplacian = np.empty(self.n)
+            laplacian = np.zeros(self.n)
         
         for nod in self.nodes:
             
@@ -207,72 +207,7 @@ class rot_sym_mesh:
         else:
             return [dx,dy]
 
-    def general_finite_differences(self,data,compute_laplacian=False):
-        
-        # initialize data vectors
-        dx = np.empty(self.n)
-        dy = np.empty(self.n)
-        if compute_laplacian:
-            laplacian = np.empty(self.n)
-        
-        for nod in self.nodes:
             
-            # 5 point stencil indizes
-            i = nod.i
-            r = nod.r
-            l = nod.l
-            u = nod.u # special boundary case
-            b = nod.b # special boundary case
-
-            # transform derivatives
-            drdx = nod.x/nod.rad
-            dphidx = -nod.y/(nod.rad**2)
-            drdy = nod.y/nod.rad
-            dphidy = nod.x/(nod.rad**2)     
-
-            # temporary radii and phi values
-            rad_u = self.nodes[u].rad if (u) else None
-            rad_b = self.nodes[b].rad if (b) else None
-            phi_l = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
-            phi_r = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
-            
-            # central diff -> fd/bd on boundary
-            if not (b): # boundary conditions
-                dr = 0
-                dphi = 0
-            elif not (u):
-                dr = (data[i] - data[b]) / (nod.rad - rad_b)
-                dphi = (data[l] - data[r]) / (phi_l - phi_r)
-            else:
-                # using central differences
-                dr   = (data[u] - data[b]) / (rad_u - rad_b)
-                dphi = (data[l] - data[r]) / (phi_l - phi_r)
-
-            # cartesian differences
-            dx[i] = dphi * dphidx + dr * drdx
-            dy[i] = dphi * dphidy + dr * drdy
-
-            if compute_laplacian:
-                if not (b): # same value boundary extension
-                    ddr = 0
-                    ddphi = 0
-                elif not (u):
-                    rad_u = nod.rad + nod.rad - rad_b
-                    data_u = (data[i] - data[b]) * (nod.rad - rad_b) + data[i] # linear extrapolation
-                    ddr = (data_u * (nod.rad - rad_b) + data[b] * (rad_u - nod.rad) - data[i] * (rad_u - rad_b)) / ((rad_u - nod.rad) * (nod.rad - rad_b) * (rad_u - rad_b) / 2)
-                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
-                else: # general domain 
-                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
-                    ddr   = (data[u] * (nod.rad - rad_b) + data[b] * (rad_u - nod.rad) - data[i] * (rad_u - rad_b)) / ((rad_u - nod.rad) * (nod.rad - rad_b) * (rad_u - rad_b) / 2)
-                
-                laplacian[i] = ddr + (1 / nod.rad) * dr + (1 / (nod.rad**2)) * ddphi
-
-        if compute_laplacian:
-            return [dx,dy,laplacian]
-        else:
-            return [dx,dy]
-
-
     def compute_volume_weights(self):
         weights = np.empty(self.n)
         for nod in self.nodes:

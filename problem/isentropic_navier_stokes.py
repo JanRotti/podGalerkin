@@ -5,8 +5,8 @@ def skalar_product(d1,d2,weights=1):
     return np.sum(d1*d2*weights)
 
 # isentropic convection operator 
-def convection(mesh,q1,q2,gamma=1.4):
-        n = mesh.n
+def convection(mesh,q1,q2,gamma=1.4):       
+        n = int(len(q1)/3)
 
         # local variable vectors
         u1 = q1[:n]
@@ -25,13 +25,13 @@ def convection(mesh,q1,q2,gamma=1.4):
         # state based convection
         u_tmp = u1 * u2x + v1 * u2y + (2 / (gamma - 1)) * a1 * a2x
         v_tmp = u1 * v2x + v1 * v2y + (2 / (gamma - 1)) * a1 * a2y
-        a_tmp = u1 * a2x + v1 * a2y + (gamma - 1)/2 * a1 * (u2x * u2x + v2y * v2y)
+        a_tmp = u1 * a2x + v1 * a2y + (gamma - 1)/2 * a1 * (u2x + v2y)
         
         return -1 * np.concatenate((u_tmp,v_tmp,a_tmp))
 
 # isentropic diffusion operator
 def diffusion(mesh,q):
-        n = mesh.n
+        n = int(len(q)/3)
         
         # local variable vectors
         u = q[:n]
@@ -45,8 +45,9 @@ def diffusion(mesh,q):
         return np.concatenate((ulap,vlap,np.zeros(n)))
 
 def curl(mesh,q):
-    u = q[:mesh.n]
-    v = q[mesh.n:2*mesh.n]
+    vecSize = int(len(q)/3)
+    u = q[:vecSize]
+    v = q[vecSize:2*vecSize]
 
     [_,uy] = mesh.finite_differences(data = u)
     [vx,_] = mesh.finite_differences(data = v)
