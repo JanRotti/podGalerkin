@@ -78,7 +78,7 @@ def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
         d1[k] = skalar_product(Lcon,podModes[:,k])
         d2[k] = skalar_product(QconAvg1 + QconAvg2, podModes[:,k])
         f[k] = skalar_product(Qcon,podModes[:,k])
-        h[k] = skalar_product(qCon,podModes[:,k])
+        h[k] = - skalar_product(qCon,podModes[:,k])
         for i in range(dim):
             g[k,i] = skalar_product(tmp1[i] + tmp2[i],podModes[:,k])
 
