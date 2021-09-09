@@ -25,7 +25,7 @@ def convection(mesh,q1,q2,gamma=1.4):
         # state based convection
         u_tmp = u1 * u2x + v1 * u2y + (2 / (gamma - 1)) * a1 * a2x
         v_tmp = u1 * v2x + v1 * v2y + (2 / (gamma - 1)) * a1 * a2y
-        a_tmp = u1 * a2x + v1 * a2y + (gamma - 1)/2 * a1 * (u2x + v2y)
+        a_tmp = u1 * a2x + v1 * a2y + (gamma - 1) / 2 * a1 * (u2x + v2y)
         
         return -1 * np.concatenate((u_tmp,v_tmp,a_tmp))
 
