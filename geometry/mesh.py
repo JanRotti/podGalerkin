@@ -2,11 +2,11 @@ import numpy as np
 from geometry.cell import cell
 from geometry.node import node
 
-class rot_sym_mesh:
+class rotationalSymmetricMesh:
 
     ### initializing class attributes
     mesh = None
-    mid_point = [0.5,0] # cylinder center in [x,y]
+    midPoint = [0.5,0]
 
     # length scales
     n = None            # number of nodes
@@ -14,18 +14,18 @@ class rot_sym_mesh:
 
     # coordinates
     points = None       # cartesian node coordinates 
-    points_pol = None   # polar node coordinates
+    pointsPol = None   # polar node coordinates
 
     # polar potentials
-    rad_levels = None   # list of potential radii
-    phi_levels = None   # list of potential angles
+    radLevels = None   # list of potential radii
+    phiLevels = None   # list of potential angles
 
     # subclass attributes
     nodes = None
     cells = None
 
     # problem attributes
-    volume_weights = None      # skalar product weights in state based space
+    volumeWeights = None      # skalar product weights in state based space
     gamma = 1.4         # isentropic coefficient
     alpha = 1           # parameter for inner product norm 1 / gamma -> stagnation energy norm; 1 -> stagnation enthalpy norm;
 
@@ -36,37 +36,46 @@ class rot_sym_mesh:
 
         self.mesh = mesh    # handing over meshio object
 
-        # set geometric length scales
+        # number of nodes
         self.n = len(self.mesh.points)
-        self.N = len(self.mesh.cells[0][1])
+        # number of cells
+        self.N = len(self.mesh.cells[0][1]) 
 
-        # computing coordinates
-        self.points = self.mesh.points - self.mid_point
-        self.points_pol = np.empty_like(self.points)
+        # node coordinates
+        self.points = self.mesh.points - self.midPoint
+        self.pointsPol = np.empty_like(self.points)
         self.compute_polar_coordinates()
 
-        # get polar potentials - necessary for finite differences
-        self.rad_levels = np.unique(self.points_pol[:,0])
-        self.phi_levels = np.unique(self.points_pol[:,1])
+        # polar potentials
+        self.radLevels = np.unique(self.pointsPol[:,0])
+        self.phiLevels = np.unique(self.pointsPol[:,1])
 
-        # initializing minimal node and cell instances
+        # initializing node and cell instances
         self.cells = [cell(nodes,i) for i,nodes in enumerate(mesh.cells[0][1])]
         self.nodes = [node(x,y,i) for i,(x,y) in enumerate(self.points)]
 
-        # computing cell and node attributes
+        ### computing cell and node based attributes
         self.compute_cell_volumes()
         self.compute_cell_centers()
+        
+        # assert node coordinates
         for nod in self.nodes:
-            nod.rad = self.points_pol[nod.i][0]
-            nod.phi = self.points_pol[nod.i][1]
+            nod.rad = self.pointsPol[nod.i][0]
+            nod.phi = self.pointsPol[nod.i][1]
+        
+        # compute node volumes
         self.compute_node_volume()
+        #compute node based weights
         self.compute_volume_weights()
+        # assert node neighbors
         self.compute_node_neighbors()
         
+        # status for initialization
         self.status("Mesh Initialization Successful!")
 
-    # local status updates for mesh class
+    
     def status(self,print_string):
+        # pretty printing
         print(f'{print_string:{"-"}<80}')
 
     def compute_polar_coordinates(self):
@@ -74,57 +83,57 @@ class rot_sym_mesh:
         for i in range(self.n):
             
             # set cylinder coordinates
-            self.points_pol[i][0] = np.sqrt((self.points[i][0])*(self.points[i][0])+(self.points[i][1])*(self.points[i][1]))
-            self.points_pol[i][1] = np.arctan2(self.points[i][1],self.points[i][0]) if np.arctan2(self.points[i][1],self.points[i][0]) >= 0 else np.arctan2(self.points[i][1],self.points[i][0])+2*np.pi
+            self.pointsPol[i][0] = np.sqrt((self.points[i][0])*(self.points[i][0])+(self.points[i][1])*(self.points[i][1]))
+            self.pointsPol[i][1] = np.arctan2(self.points[i][1],self.points[i][0]) if np.arctan2(self.points[i][1],self.points[i][0]) >= 0 else np.arctan2(self.points[i][1],self.points[i][0])+2*np.pi
             
             # setting phi with 2*pi to 0
-            if np.isclose(2*np.pi,self.points_pol[i][1],rtol=1e-09,atol=0.0):
-                self.points_pol[i][1] = 0 
+            if np.isclose(2*np.pi,self.pointsPol[i][1],rtol=1e-09,atol=0.0):
+                self.pointsPol[i][1] = 0 
 
         # rounding cylinder coordinates due to numerical errors        
-        self.points_pol = np.around(self.points_pol,12)
+        self.pointsPol = np.around(self.pointsPol,12)
 
     def compute_cell_volumes(self):
-        ## computing cell volumes with cell subroutine
+        # computing cell volumes with cell subroutine
         for cel in self.cells:
             cel.compute_volume(self)
 
     def compute_cell_centers(self):
-        ## computing cell centers with cell subroutine
+        # computing cell centers with cell subroutine
         for cel in self.cells:
             cel.compute_center(self)
 
     def compute_node_neighbors(self):
         # iterate over radius levels
-        for i, rad in enumerate(self.rad_levels):
+        for i, rad in enumerate(self.radLevels):
             
             # find indexes on same radius level
-            same_rad = self.points_pol[:,0]==rad
-            same_rad_index_list = np.where(same_rad==True)[0]
+            sameRadius = self.pointsPol[:,0]==rad
+            sameRadiusIndexList = np.where(sameRadius==True)[0]
            
             # find indexes of next radius level
-            if rad != self.rad_levels[-1]:
-                next_rad = self.points_pol[:,0]==self.rad_levels[i+1]
-                next_rad_index_list = np.where(next_rad==True)[0]            
+            if rad != self.radLevels[-1]:
+                nextRadius = self.pointsPol[:,0]==self.radLevels[i+1]
+                nextRadiusIndexList = np.where(nextRadius==True)[0]            
             
             # iterate over phis with stencil left - middle - up
-            for j,phi in enumerate(self.phi_levels):
+            for j,phi in enumerate(self.phiLevels):
                 
                 # find indexes of same phi level
-                same_phi = self.points_pol[:,1]==phi
-                same_phi_index_list = np.where(same_phi==True)[0]
-                index = int(np.intersect1d(same_phi_index_list,same_rad_index_list))
+                samePhi = self.pointsPol[:,1]==phi
+                samePhiIndexList = np.where(samePhi==True)[0]
+                index = int(np.intersect1d(samePhiIndexList,sameRadiusIndexList))
                 
                 # find indexes of next phi level - left node
-                next_phi = self.points_pol[:,1]== (self.phi_levels[j+1] if (phi!=self.phi_levels[-1]) else self.phi_levels[0])
-                next_phi_index_list = np.where(next_phi==True)[0]
-                left = int(np.intersect1d(next_phi_index_list,same_rad_index_list))
+                nextPhi = self.pointsPol[:,1]== (self.phiLevels[j+1] if (phi!=self.phiLevels[-1]) else self.phiLevels[0])
+                nextPhiIndexList = np.where(nextPhi==True)[0]
+                left = int(np.intersect1d(nextPhiIndexList,sameRadiusIndexList))
                 
                 # iterate over radius levels
-                if rad != self.rad_levels[-1]:
+                if rad != self.radLevels[-1]:
 
                     # find upper node
-                    up = int(np.intersect1d(same_phi_index_list,next_rad_index_list))
+                    up = int(np.intersect1d(samePhiIndexList,nextRadiusIndexList))
                     
                     # set up and bottom of nodes
                     self.nodes[index].u = up
@@ -135,19 +144,23 @@ class rot_sym_mesh:
                 self.nodes[left].r = index
 
     def compute_node_volume(self):
+        # iterate cells
         for cel in self.cells:
-            node_list = cel.nodes 
-            for node_index in node_list:
-                self.nodes[node_index].volume += cel.volume/len(node_list)
+            nodeList = cel.nodes 
+            # iterate nodes
+            for nodeIndex in nodeList:
+                # assert weighted cell volume to cell constituting nodes
+                self.nodes[nodeIndex].volume += cel.volume/len(nodeList)
 
-    def finite_differences(self,data,fd=False,compute_laplacian=False):
+    def finite_differences(self,data,fd=False,computeLaplacian=False):
         
         # initialize data vectors
         dx = np.zeros(self.n)
         dy = np.zeros(self.n)
-        if compute_laplacian:
+        if computeLaplacian:
             laplacian = np.zeros(self.n)
         
+        # iterate nodes
         for nod in self.nodes:
             
             # 5 point stencil indizes
@@ -164,45 +177,50 @@ class rot_sym_mesh:
             dphidy = nod.x/(nod.rad**2)     
 
             # temporary radii and phi values
-            rad_u = self.nodes[u].rad if (u) else None
-            rad_b = self.nodes[b].rad if (b) else None
-            phi_l = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
-            phi_r = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
+            radiusUp = self.nodes[u].rad if (u) else None
+            radiusBottom = self.nodes[b].rad if (b) else None
+            phiLeft = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
+            phiRight = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
             
             if not (b): # boundary conditions
                 # no slip/penetration wall
                 dr = 0
                 dphi = 0
             elif not (u):
-                # freestream condition
+                # neumann boundary for freestream
                 dr = 0
-                dphi = (data[l] - data[r]) / (phi_l - phi_r)
+                dphi = (data[l] - data[r]) / (phiLeft - phiRight)
             else:
                 if fd: # using forward differences
-                    dr   = (data[u] - data[i]) / (rad_u - nod.rad)
-                    dphi = (data[l] - data[i]) / (phi_l - nod.phi)
+                    dr   = (data[u] - data[i]) / (radiusUp - nod.rad)
+                    dphi = (data[l] - data[i]) / (phiLeft - nod.phi)
                 else: # using central differences
-                    dr   = (data[u] - data[b]) / (rad_u - rad_b)
-                    dphi = (data[l] - data[r]) / (phi_l - phi_r)
+                    dr   = (data[u] - data[b]) / (radiusUp - radiusBottom)
+                    dphi = (data[l] - data[r]) / (phiLeft - phiRight)
 
             # cartesian differences
             dx[i] = dphi * dphidx + dr * drdx
             dy[i] = dphi * dphidy + dr * drdy
 
-            if compute_laplacian:
+            if computeLaplacian:
                 if not (b): # boundary conditions
+                    # no slip/penetration wall
                     ddr = 0
                     ddphi = 0
                 elif not (u):
+                    # neumann boundary for freestream
                     ddr = 0
-                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
+                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phiLeft - nod.phi) * (nod.phi - phiRight)) 
                 else:
-                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phi_l - nod.phi) * (nod.phi - phi_r)) 
-                    ddr   = (data[u] * (nod.rad - rad_b) + data[b] * (rad_u - nod.rad) - data[i] * (rad_u - rad_b)) / ((rad_u - nod.rad) * (nod.rad - rad_b) * (rad_u - rad_b) / 2)
+                    # central differences
+                    ddphi = (data[l] - 2*data[i] + data[r]) / ((phiLeft - nod.phi) * (nod.phi - phiRight)) 
+                    ddr   = (data[u] * (nod.rad - radiusBottom) + data[b] * (radiusUp - nod.rad) - data[i] * (radiusUp - radiusBottom)) / ((radiusUp - nod.rad) * (nod.rad - radiusBottom) * (radiusUp - radiusBottom) / 2)
                 
+                # laplacian computation
                 laplacian[i] = ddr + (1 / nod.rad) * dr + (1 / (nod.rad**2)) * ddphi
 
-        if compute_laplacian:
+        # structured return
+        if computeLaplacian:
             return [dx,dy,laplacian]
         else:
             return [dx,dy]
@@ -212,7 +230,7 @@ class rot_sym_mesh:
         weights = np.empty(self.n)
         for nod in self.nodes:
             weights[nod.i] = nod.volume
-        self.volume_weights = np.concatenate([weights,weights,weights])
+        self.volumeWeights = np.concatenate([weights,weights,weights])
 
     def nabla_finite_differences(self,data):
         res = np.zeros(self.n)
@@ -226,10 +244,10 @@ class rot_sym_mesh:
             b = nod.b # special boundary case
 
             # temporary radii and phi values
-            rad_u = self.nodes[u].rad if (u) else None
-            rad_b = self.nodes[b].rad if (b) else None
-            phi_l = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
-            phi_r = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
+            radiusUp = self.nodes[u].rad if (u) else None
+            radiusBottom = self.nodes[b].rad if (b) else None
+            phiLeft = self.nodes[l].phi if (self.nodes[l].phi!=0) else 2*np.pi
+            phiRight = self.nodes[r].phi if (self.nodes[i].phi!=0) else self.nodes[r].phi-2*np.pi
 
             # finite difference computation      
             if not (b): # boundary conditions
@@ -237,10 +255,10 @@ class rot_sym_mesh:
                 dphi = 0
             elif not (u):
                 dr = 0
-                dphi = (data[l] - data[r]) / (phi_l - phi_r)
+                dphi = (data[l] - data[r]) / (phiLeft - phiRight)
             else:
-                dr   = (data[u] - data[b]) / (rad_u - rad_b)
-                dphi = (data[l] - data[r]) / (phi_l - phi_r)
+                dr   = (data[u] - data[b]) / (radiusUp - radiusBottom)
+                dphi = (data[l] - data[r]) / (phiLeft - phiRight)
 
             # nabla computation is cylinder coords
             res[i] = dr + 1 / nod.rad * dphi

@@ -7,34 +7,34 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
 # reading simulation data from csv files
-def read_csv_data(data_dir,delay=1000,subsampling=1,max_size=500,data_list=[]):
+def read_csv_data(dataDirectory,delay=1000,subsampling=1,maxSize=500,dataList=[]):
     ## Variables
     # file_name_structure   -> naming scheme of csv files
     # delay                 -> first file to read in
     # subsampling           -> spacing between files to read
-    # max_size              -> maximum time dimension for array
-    # data_list             -> specify data headers to read
+    # maxSize               -> maximum time dimension for array
+    # dataList              -> specify data headers to read
     
     # reading simulation data from csv files
-    file_list = os.listdir(data_dir)
-    num_files = len(file_list) # difference of delay and filelist length
-    if num_files<=0:
+    fileList = os.listdir(dataDirectory)
+    fileNumber = len(fileList) # difference of delay and filelist length
+    if fileNumber<=0:
         raise ValueError("Invalid delay or empty directory!")
 
     # get number of data entries
     try:
-        with open(data_dir+file_list[0]) as f:
-            data_iter = csv.reader(f,delimiter=",")
-            N = sum(1 for _ in data_iter) - 1 # number of data entries excluding headers
+        with open(dataDirectory+fileList[0]) as f:
+            dataIterator = csv.reader(f,delimiter=",")
+            N = sum(1 for _ in dataIterator) - 1 # number of data entries excluding headers
             f.close()
     except IOError:
         print("File not accessible")
 
     # get headers
     try:
-        with open(data_dir+file_list[0]) as f:
-            data_iter = csv.reader(f,delimiter=",")
-            for row in data_iter:
+        with open(dataDirectory+fileList[0]) as f:
+            dataIterator = csv.reader(f,delimiter=",")
+            for row in dataIterator:
                 headers = row
                 break
             f.close()
@@ -42,31 +42,31 @@ def read_csv_data(data_dir,delay=1000,subsampling=1,max_size=500,data_list=[]):
         print("File not accessible") 
 
     # compute array size for initialization
-    if (num_files-delay)//subsampling > max_size:
-        array_size = max_size
+    if (fileNumber-delay)//subsampling > maxSize:
+        array_size = maxSize
     else:
-        array_size = (num_files-delay)//subsampling
+        array_size = (fileNumber-delay)//subsampling
 
     # initialize data dictionary
     data = {}
     for header in headers:
-        if len(data_list)==0:
+        if len(dataList)==0:
             data[header] = np.empty((N,array_size))
-        elif header in data_list:
+        elif header in dataList:
             data[header] = np.empty((N,array_size))
 
     # reading file data from csv files
     for i in tqdm(range(array_size)):
-        fname = data_dir + file_list[i*subsampling+delay]
+        fname = dataDirectory + fileList[i*subsampling+delay]
         # reading routine
         with open(fname) as f:
-            data_iter = csv.reader(f,delimiter=",")
-            for j,row in enumerate(data_iter):
+            dataIterator = csv.reader(f,delimiter=",")
+            for j,row in enumerate(dataIterator):
                 if j!=0:
                     for k,header in enumerate(headers):
-                        if len(data_list)==0:
+                        if len(dataList)==0:
                             data[header][j-1,i] = row[k]
-                        elif header in data_list:
+                        elif header in dataList:
                             data[header][j-1,i] = row[k]
 
     return data
@@ -156,25 +156,19 @@ def print_padded(print_string):
 # plotting pod mode activation in time
 def plot_activations(coeffs,num,dt):
     t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
-
+    # number of subplot rows
     rows = int(num//2)
+    # create subplot structure
     fig, ax = plt.subplots(rows,1,figsize=(10,2*8))
+    # reduced subplot spacing
     fig.tight_layout(pad=3.0)
+    # iterate rows
     for i in range(rows):
         ax[i].plot(t,coeffs[2*i,:])
         ax[i].plot(t,coeffs[2*i + 1,:])
         ax[i].title.set_text("Eigenflow " + str(2*i) + " and " + str(2*i+1))
 
-def plot_group_activations(coeffs,num,dt):
-    t = np.linspace(0,(coeffs.shape[1]-1)*dt,coeffs.shape[1])
 
-    rows = int(num//2)
-    fig, ax = plt.subplots(rows,1,figsize=(10,2*8))
-    fig.tight_layout(pad=3.0)
-    for i in range(rows):
-        ax[i].plot(t,coeffs[2*i,:])
-        ax[i].plot(t,coeffs[2*i + 1,:])
-        ax[i].title.set_text("Eigenflow " + str(i) + " and " + str(i+1))
 
 
 

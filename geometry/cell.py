@@ -2,12 +2,12 @@ import numpy as np
 
 class cell: 
 
-    def __init__(self,node_list,index):
+    def __init__(self,nodeList,index):
         
         self.i = index
         
         # nodes spanning cell - quadrilateral
-        self.nodes = node_list
+        self.nodes = nodeList
         
         # cell attributes
         self.volume = None
@@ -20,7 +20,7 @@ class cell:
         self.dy = None
 
     def compute_volume(self,mesh):
-
+        
         # indexes of cell nodes
         i1 = self.nodes[0]
         i2 = self.nodes[1]
@@ -32,10 +32,12 @@ class cell:
         
     def compute_center(self,mesh):
         
-        # cell center computation
+        # cell center from node coordinate average
         self.center = np.mean(mesh.points[self.nodes],axis=0)
     
     def compute_cell_value(self,data):
-        # based on vectorized data with len n
+        
+        # compute cell center value by weighted average
         self.value = 0.25*np.sum(data[self.nodes])
+        
         return self.value

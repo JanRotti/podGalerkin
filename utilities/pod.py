@@ -1,40 +1,54 @@
 import numpy as np
 
-def get_POD(snapshots,skalarProduct,max_POD=10):
+def get_POD(snapshots,skalar_product,maxPOD=10):
+    ### METHOD OF SNAPSHOTS
     
-    # POD by method of snapshots
+    # input dimensions
     T = snapshots.shape[1]
-    space = snapshots.shape[0]
+    n = snapshots.shape[0]
 
-    # construct correlation matrix
+    # correlation matrix
     C = np.empty((T,T))
     for i in range(T):
+        # utilize symmetry of C
         for j in range(i,T):
-            C[i,j] = skalarProduct(snapshots[:,i], snapshots[:,j])
-            C[j,i] = C[i,j]  # C is symmetric by construction
+            C[i,j] = skalar_product(snapshots[:,i], snapshots[:,j])
+            C[j,i] = C[i,j] # symmetry property
 
+    # eigenvalue problem of correlation matrix
     S, V =  np.linalg.eigh(C,UPLO='L')
-    S = np.flip(S,0)
-    V = np.flip(V,1)
+    # flip due to return structure of bp.linalg.eigh
+    S = np.flip(S,0) # make S in descending order
+    V = np.flip(V,1) # make V correspondingly
 
-    # construct spatial POD Modes
-    pod_modes = np.zeros((space,max_POD))
-    for i in range(max_POD):
-        pod_modes[:,i] = 1 / np.sqrt(S[i]) *  np.matmul(snapshots,V[:,i])
+    # construct spatial POD Modes from snapshots
+    podModes = np.zeros((n,maxPOD))
+    for i in range(maxPOD): # faster than straight matrix multiplication!
+        podModes[:,i] = 1 / np.sqrt(S[i]) *  np.matmul(snapshots,V[:,i])
 
-    # computing eigenvalues
-    S = np.zeros(max_POD)
-    for i in range(max_POD):
+    # computing eigenvalues from snapshots
+    S = np.zeros(maxPOD)
+    for i in range(maxPOD):
         for j in range(T):
-            S[i] += skalarProduct(snapshots[:,j], pod_modes[:,i])**2
+            S[i] += skalar_product(snapshots[:,j], podModes[:,i])**2
 
-    return [pod_modes, S]
+    return [podModes, S]
 
-def get_activations(snapshots,pod_modes,skalarProduct,rec_num=0):
-    if rec_num==0:
-        rec_num = pod_modes.shape[1]
-    activations = np.zeros((pod_modes.shape[1],snapshots.shape[1]))
-    for t in range(snapshots.shape[1]):
-        for i in range(rec_num):
-            activations[i,t] = skalarProduct(snapshots[:,t], pod_modes[:,i])
+def get_activations(snapshots,podModes,skalar_product,recNum=0):
+    ### COMPUTE REFERENCE ACTIVATIONS
+    
+    # input dimensions
+    n = podModes.shape[1]
+    T = snapshots.shape[1]
+
+    # if reconstruction dimension is 0 -> use all possible vectors
+    if recNum==0:
+        recNum = n
+
+    # compute mode activation by projection
+    activations = np.zeros((n,T))
+    for t in range(T):
+        for i in range(recNum):
+            activations[i,t] = skalar_product(snapshots[:,t], podModes[:,i])
+    
     return activations

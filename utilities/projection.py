@@ -3,7 +3,7 @@ from tqdm import tqdm
 from problem.isentropic_navier_stokes import * 
 
 ### GALERKIN PROJECTION
-def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
+def isentropic_projection(mesh,podModes,qAvg,skalar_product):
     # isentropic navier stokes based coefficients
     dim = podModes.shape[1]
     vecSize = len(qAvg)
@@ -35,13 +35,13 @@ def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
     
     # projection via skalar product
     for k in tqdm(range(dim)):
-        b1[k] = skalarProduct(avgDiff,podModes[:,k])
-        b2[k] = skalarProduct(avgConv,podModes[:,k])
+        b1[k] = skalar_product(avgDiff,podModes[:,k])
+        b2[k] = skalar_product(avgConv,podModes[:,k])
         for i in range(dim):
-            L1[k,i] = skalarProduct(diffTmp[i],podModes[:,k])
-            L2[k,i] = skalarProduct(convTmp1[i] + convTmp2[i],podModes[:,k])
+            L1[k,i] = skalar_product(diffTmp[i],podModes[:,k])
+            L2[k,i] = skalar_product(convTmp1[i] + convTmp2[i],podModes[:,k])
             for j in range(dim):
-                Q[k][i,j] = skalarProduct(convTmp3[i,j],podModes[:,k])
+                Q[k][i,j] = skalar_product(convTmp3[i,j],podModes[:,k])
         
     # output
     print("Projection based Galerkin coefficients in order: b1,b2,L1,L2,Q")
@@ -49,7 +49,7 @@ def isentropic_projection(mesh,podModes,qAvg,skalarProduct):
     return [b1, b2, L1, L2, Q] 
 
 
-def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
+def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalar_product):
     dim = podModes.shape[1]
     vecSize = len(qAvg)
 
@@ -78,7 +78,7 @@ def isentropic_control_projection(mesh,podModes,qAvg,qCon,skalarProduct):
         d1[k] = skalar_product(Lcon,podModes[:,k])
         d2[k] = skalar_product(QconAvg1 + QconAvg2, podModes[:,k])
         f[k] = skalar_product(Qcon,podModes[:,k])
-        h[k] = - skalar_product(qCon,podModes[:,k])
+        h[k] = -skalar_product(qCon,podModes[:,k])
         for i in range(dim):
             g[k,i] = skalar_product(tmp1[i] + tmp2[i],podModes[:,k])
 

@@ -1,11 +1,8 @@
 import numpy as np
 
-def skalar_product(d1,d2,weights=1):
-    # general definition with weights 1
-    return np.sum(d1*d2*weights)
-
 # isentropic convection operator 
 def convection(mesh,q1,q2,gamma=1.4):       
+        # Q operator in thesis
         n = int(len(q1)/3)
 
         # local variable vectors
@@ -31,6 +28,7 @@ def convection(mesh,q1,q2,gamma=1.4):
 
 # isentropic diffusion operator
 def diffusion(mesh,q):
+        # L operator in thesis
         n = int(len(q)/3)
         
         # local variable vectors
@@ -38,14 +36,17 @@ def diffusion(mesh,q):
         v = q[n:2*n]
 
         # derivatives
-        [_, _, ulap] = mesh.finite_differences(u,compute_laplacian=True)
-        [_, _, vlap] = mesh.finite_differences(v,compute_laplacian=True)
+        [_, _, ulap] = mesh.finite_differences(u,computeLaplacian=True)
+        [_, _, vlap] = mesh.finite_differences(v,computeLaplacian=True)
 
         # state based diffusion
         return np.concatenate((ulap,vlap,np.zeros(n)))
 
 def curl(mesh,q):
+    # curl operator for vorticity 
     vecSize = int(len(q)/3)
+
+    # local variable vectors
     u = q[:vecSize]
     v = q[vecSize:2*vecSize]
 
@@ -59,7 +60,7 @@ def laplacian(mesh,q):
     v = q[mesh.n:2*mesh.n]
     
     # derivatives
-    [_, _, ulap] = mesh.finite_differences(u,compute_laplacian=True)
-    [_, _, vlap] = mesh.finite_differences(v,compute_laplacian=True)
+    [_, _, ulap] = mesh.finite_differences(u,computeLaplacian=True)
+    [_, _, vlap] = mesh.finite_differences(v,computeLaplacian=True)
 
     return np.concatenate((ulap,vlap))
