@@ -166,7 +166,7 @@ def plot_activations(coeffs,num,dt):
     for i in range(rows):
         ax[i].plot(t,coeffs[2*i,:])
         ax[i].plot(t,coeffs[2*i + 1,:])
-        ax[i].title.set_text("Eigenflow " + str(2*i) + " and " + str(2*i+1))
+        ax[i].title.set_text("Eigenflow " + str(2*i+1) + " and " + str(2*i+2))
 
 
 
