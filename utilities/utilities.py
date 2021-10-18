@@ -17,7 +17,15 @@ def read_csv_data(dataDirectory,delay=1000,subsampling=1,maxSize=500,dataList=[]
     
     # reading simulation data from csv files
     fileList = os.listdir(dataDirectory)
-    fileNumber = len(fileList) # difference of delay and filelist length
+    
+    # extract iteration numbers
+    numList = list(map(lambda sub:int(''.join([i for i in sub if i.isnumeric()])), fileList))
+    
+    # create sorted argument list
+    indexSort = np.argsort(np.array(numList))
+    
+    # filelist length
+    fileNumber = len(fileList) 
     if fileNumber<=0:
         raise ValueError("Invalid delay or empty directory!")
 
@@ -57,7 +65,7 @@ def read_csv_data(dataDirectory,delay=1000,subsampling=1,maxSize=500,dataList=[]
 
     # reading file data from csv files
     for i in tqdm(range(array_size)):
-        fname = dataDirectory + fileList[i*subsampling+delay]
+        fname = dataDirectory + fileList[indexSort[i*subsampling+delay]]
         # reading routine
         with open(fname) as f:
             dataIterator = csv.reader(f,delimiter=",")
